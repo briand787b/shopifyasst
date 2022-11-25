@@ -4,4 +4,5 @@ package asset
 // Shopify product with a saved Downloadable Digital Assets asset
 type Associater interface {
 	AssociateShopifyProductWithAsset(productID, assetID string) error
+	GetDDAProductID(shopifyProductID int) (string, error)
 }

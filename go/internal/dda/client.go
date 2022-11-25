@@ -6,7 +6,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -39,7 +41,7 @@ func NewDownloadableDigitalAssetsClient(token string) *Client {
 // CreateMetaData stores asset metadata in DDA
 func (c *Client) CreateMetaData(i *asset.Image) error {
 	body := CreateAssetMetaDataRequest{
-		Name: i.Filename,
+		Name: filepath.Base(i.Filename),
 		Size: i.Size,
 		Mime: i.MimeType,
 	}
@@ -49,6 +51,8 @@ func (c *Client) CreateMetaData(i *asset.Image) error {
 		return fmt.Errorf("marshalling %T to JSON failed: %w", body, err)
 	}
 
+	log.Printf("[DEBUG] create metadata request JSON: %s", bodyJSON)
+
 	req, err := http.NewRequest(
 		http.MethodPost,
 		baseV1URL+"/assets/signed",
@@ -57,6 +61,11 @@ func (c *Client) CreateMetaData(i *asset.Image) error {
 	if err != nil {
 		return fmt.Errorf("request creation failed: %w", err)
 	}
+	log.Printf("[DEBUG] create metadata request url: %s", req.URL)
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.authToken))
+	req.Header.Set("Content-Type", "applicatin/json")
+	log.Printf("[DEBUG] create metadata request headers: %+v", req.Header)
 
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -124,11 +133,10 @@ func (c *Client) UploadParts(i *asset.Image) error {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
-			part := parts[i]
-			err := c.uploadPart(&part)
+			err := c.uploadPart(&parts[i])
 			if err != nil {
 				err = fmt.Errorf("failed to upload partition #%d: %w",
-					part.ID, err)
+					parts[i].ID, err)
 			}
 
 			errChan <- err
@@ -145,6 +153,7 @@ func (c *Client) UploadParts(i *asset.Image) error {
 	}
 
 	for _, part := range parts {
+		log.Printf("[DEBUG] setting partition: %+v", part)
 		if err := i.SetPartition(part); err != nil {
 			return fmt.Errorf("failed to set partition: %w", err)
 		}
@@ -213,6 +222,8 @@ func (c *Client) ConfirmUpload(i *asset.Image) error {
 		return fmt.Errorf("could not marshal request to JSON: %w", err)
 	}
 
+	log.Printf("[DEBUG] confirmation request JSON: %s", payloadJSON)
+
 	req, err := http.NewRequest(
 		http.MethodPost,
 		baseV1URL+fmt.Sprintf("/assets/%s/uploaded", i.ID),
@@ -222,6 +233,12 @@ func (c *Client) ConfirmUpload(i *asset.Image) error {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
 
+	log.Printf("[DEBUG] confirmation request url: %s", req.URL)
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.authToken))
+	req.Header.Set("Content-Type", "applicatin/json")
+	log.Printf("[DEBUG] confirmation request headers: %+v", req.Header)
+
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to send request: %w", err)
@@ -230,6 +247,13 @@ func (c *Client) ConfirmUpload(i *asset.Image) error {
 	defer resp.Body.Close()
 
 	if code := resp.StatusCode; code != http.StatusCreated {
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Printf("could not read confirmation resp body: %s", err)
+		} else {
+			log.Printf("confirmation resp body: %s", body)
+		}
+
 		return fmt.Errorf("resp status code not 201 (is: %d)", code)
 	}
 
@@ -255,14 +279,85 @@ func (c *Client) AssociateShopifyProductWithAsset(productID, assetID string) err
 		return fmt.Errorf("failed to create request: %w", err)
 	}
 
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.authToken))
+	req.Header.Set("Content-Type", "applicatin/json")
+	log.Printf("[DEBUG] association request headers: %+v", req.Header)
+
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to send request: %w", err)
 	}
 
+	defer resp.Body.Close()
+
 	if code := resp.StatusCode; code != http.StatusCreated {
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Printf("could not read association resp body: %s", err)
+		} else {
+			log.Printf("association resp body: %s", body)
+		}
+
 		return fmt.Errorf("resp status code not 201 (is: %d)", code)
 	}
 
 	return nil
+}
+
+func (c *Client) GetDDAProductID(shopifyProductID int) (string, error) {
+	req, err := http.NewRequest(
+		http.MethodGet,
+		baseV1URL+fmt.Sprintf("/products?product_id=%d", shopifyProductID),
+		nil,
+	)
+	if err != nil {
+		return "", fmt.Errorf("could not build product list request: %w", err)
+	}
+
+	log.Printf("[DEBUG] product list request url: %s", req.URL)
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.authToken))
+	req.Header.Set("Content-Type", "applicatin/json")
+	log.Printf("[DEBUG] product list request headers: %+v", req.Header)
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("could not send request: %w", err)
+	}
+
+	defer resp.Body.Close()
+
+	if code := resp.StatusCode; code != http.StatusOK {
+		return "", fmt.Errorf("resp code is not 200 (is %d)", code)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("could not read response body: %w", err)
+	}
+
+	log.Printf("[DEBUG] product list response JSON: %s", body)
+
+	var productListResp ProductListResponse
+	if err := json.Unmarshal(body, &productListResp); err != nil {
+		return "", fmt.Errorf("could not unmarshal %s into %T: %w",
+			body,
+			productListResp,
+			err,
+		)
+	}
+
+	searchedProductIDs := make([]int, len(productListResp.Data))
+	for _, product := range productListResp.Data {
+		if product.ProductID == shopifyProductID {
+			return product.ID, nil
+		}
+
+		searchedProductIDs = append(searchedProductIDs, product.ProductID)
+	}
+
+	log.Printf("[DEBUG] %d not found in %+v", shopifyProductID, searchedProductIDs)
+	log.Printf("[DEBUG] product list: %+v", productListResp)
+
+	return "", fmt.Errorf("product_id '%d' does not exist in DDA", shopifyProductID)
 }

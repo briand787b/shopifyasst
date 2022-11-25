@@ -2,7 +2,7 @@
 
 import argparse
 import shopify
-import os
+import os.path
 
 def main():
     parser = argparse.ArgumentParser(
@@ -54,8 +54,10 @@ def createShopifyProduct(filename, token, url, tags):
     shopify.ShopifyResource.activate_session(session)
     # ...
 
+    title = os.path.splitext(os.path.basename(filename))[0]
+    
     product = shopify.Product()
-    product.title = os.path.splitext(filename)[0]
+    product.title = title
     product.id                          # => 292082188312
     product.attributes['tags'] = tags
     # print(f'product before save: {product.attributes}')
@@ -63,6 +65,7 @@ def createShopifyProduct(filename, token, url, tags):
     # print(f'product after save: {product.attributes}')
 
     shopify.ShopifyResource.clear_session()
+    print(f'{product.id}')
 
 if __name__ == '__main__':
     main()

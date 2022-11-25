@@ -24,18 +24,20 @@ set -e
 
 if [[ -n "$1" && "$1" == '-recompile' ]]; then
     echo recompiling go binary...
-    go build -o upload_dda ./upload_dda.go
+    cd go
+    go build -o ../upload_dda ./cmd/uploader/main.go
+    cd ..
 fi
 
 source .env
 
 UPLOAD_FILES=("$(aws s3 ls $S3_IMAGE_BUCKET | awk '{$1=$2=$3=""; print substr($0, 4)}')")
-if (( ! ${#UPLOAD_FILES[@]} )); then
+if [ -z "$UPLOAD_FILES" ]; then
     echo 'no files found in s3 bucket, nothing to do...'
     exit 0
 fi
 
-echo "$UPLOAD_FILES"
+echo "upload files: $UPLOAD_FILES"
 
 for UF in "$UPLOAD_FILES"
 do
@@ -51,11 +53,18 @@ do
         echo 'Warning: no tags found in image EXIF data'
     fi
     
-    echo creating shopify product...
-    PRODUCT_ID=$(./upload_shopify.py "$UPLOAD_PATH" $TAGS)
+    echo "creating shopify product..."
+    PRODUCT_ID=$(./upload_shopify.py \
+        $TAGS \
+        --filename="$UPLOAD_PATH" \
+        --token="$SHOPIFY_TOKEN" \
+        --url="$SHOPIFY_URL")
     
-    echo uploading asset to shopify and linking to product...
-    ./upload_dda -filename="$UPLOAD_PATH" -product_id=$PRODUCT_ID
+    echo "uploading asset ($UPLOAD_PATH) to shopify and linking to product ($PRODUCT_ID)..."
+    ./upload_dda \
+        -filename="$UPLOAD_PATH" \
+        -product="$PRODUCT_ID" \
+        -token="$DDA_TOKEN"
     
     rm "$UPLOAD_PATH"
     aws s3 rm "$S3_IMAGE_BUCKET/$UF"
