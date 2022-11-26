@@ -13,7 +13,9 @@ set -e
 
 source .env
 
-#tar --create --file $COMPRESSED_ARCHIVE -z -v --exclude 'images/*' --exclude $COMPRESSED_ARCHIVE .
-go build -o upload_dda ./upload_dda.go
+cd go
+go build -o ../upload_dda ./cmd/uploader/main.go
+cd ..
+
 tar --create --file $COMPRESSED_ARCHIVE -z -v main.sh upload_dda upload_shopify.py
 aws s3 cp $COMPRESSED_ARCHIVE "$S3_SCRIPT_BUCKET/$COMPRESSED_ARCHIVE"
