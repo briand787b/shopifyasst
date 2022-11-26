@@ -39,7 +39,7 @@ sudo reboot
 # log back in as before
 sudo apt install exiftool awscli python3.10-venv python3-pip
 aws configure # provide access key and pw from console
-aws s3 cp s3://citystock-uploader/uploader.tgz $HOME/uploader.tgz
+aws s3 cp $S3_SCRIPT_BUCKET/uploader.tgz $HOME/uploader.tgz
 mkdir $HOME/uploader
 tar xzvf $HOME/uploader.tgz -C $HOME/uploader
 cd $HOME/uploader

@@ -22,7 +22,7 @@
 
 set -e
 
-if [[ -n "$1" && "$1" == '-recompile' ]]; then
+if [[ "$1" == '--recompile' ]]; then
     echo recompiling go binary...
     cd go
     go build -o ../upload_dda ./cmd/uploader/main.go
