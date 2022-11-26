@@ -4,6 +4,9 @@ import argparse
 import shopify
 import os.path
 
+# constants
+api_version = '2021-10'
+
 def main():
     parser = argparse.ArgumentParser(
         prog = 'Uploader',
@@ -26,12 +29,21 @@ def main():
     parsedTags = parseTags(args.tags)
     # print(f'parsed tags: {parsedTags}')
 
-    createShopifyProduct(
+    product_id = createShopifyProduct(
         args.filename,
         args.token,
         args.url,
         parsedTags,
     )
+
+    createShopifyProductImage(
+        args.filename,
+        product_id,
+        args.token,
+        args.url,
+    )
+
+    print(product_id)
 
 def parseTags(tagArr):
     attrs = []
@@ -47,25 +59,35 @@ def parseTags(tagArr):
     attrs.append(" ".join(tmp_attrs))
     return attrs
 
+def image_title(filename):
+    return os.path.splitext(os.path.basename(filename))[0]
+
 def createShopifyProduct(filename, token, url, tags):
-    api_version = '2021-10'
+    session = shopify.Session(url, api_version, token)
+    shopify.ShopifyResource.activate_session(session)
+    
+    product = shopify.Product()
+    product.title = image_title(filename)
+    product.attributes['tags'] = tags
+    product.save()
+
+    shopify.ShopifyResource.clear_session()
+    # print(f'{product.id}')
+    return product.id
+
+def createShopifyProductImage(filename, product_id, token, url):
+    with open(filename, 'rb') as f:
+        contents = f.read()
 
     session = shopify.Session(url, api_version, token)
     shopify.ShopifyResource.activate_session(session)
-    # ...
 
-    title = os.path.splitext(os.path.basename(filename))[0]
-    
-    product = shopify.Product()
-    product.title = title
-    product.id                          # => 292082188312
-    product.attributes['tags'] = tags
-    # print(f'product before save: {product.attributes}')
-    product.save()                      # => True
-    # print(f'product after save: {product.attributes}')
+    img = shopify.Image()
+    img.product_id = product_id
+    img.attach_image(contents, image_title(filename))
+    img.save()
 
     shopify.ShopifyResource.clear_session()
-    print(f'{product.id}')
 
 if __name__ == '__main__':
     main()
