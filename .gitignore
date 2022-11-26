@@ -6,6 +6,7 @@ upload_dda
 # need to double check if i should ignore bin
 bin
 uploader.tgz
+lib64
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
