@@ -7,6 +7,13 @@ import (
 	"time"
 )
 
+const (
+	// milliseconds to wait before retry
+	searchProductRetryMs = 100
+	// # of retries before considered failure
+	searchProductRetryCount = 10
+)
+
 // UploadImage is the entrypoint for asset upload.  It creates/uploads
 // the asset, then associates that asset with a Shopify product.
 // It returns the asset
@@ -36,27 +43,33 @@ func UploadImage(filename string, u Uploader) (*Image, error) {
 	return img, nil
 }
 
+// AssociateImageWithShopifyProduct links a Shopify product with a DDA asset (image).
+// The DDA API requires the DDA id of the Shopify product, which is held in DDA's database.
+// This requires the function to search DDA product API with the Shopify product ID.  The
+// returned product, if found, will contain the DDA product ID to use in the association
+// method that ultimately links the product and the asset.  Retries are required because
+// DDA can be slow to update their product API
 func AssociateImageWithShopifyProduct(ddaAssetID, shopifyProductIDStr string, a Associater) error {
 	shopifyProductID, err := strconv.Atoi(shopifyProductIDStr)
 	if err != nil {
 		return fmt.Errorf("cannot convert %s to integer: %w", shopifyProductIDStr, err)
 	}
 
-	// find the product's DDA id - have some retries
+	// find the product's DDA id - allow retries for slow DDA updates
 	var ddaProductID string
-	for i := 0; i < 10; i++ {
+	for i := 0; i < searchProductRetryCount; i++ {
 		ddaProductID, err = a.GetDDAProductID(shopifyProductID)
 		if err == nil {
 			break
 		}
 
 		err = fmt.Errorf("cannot find product in DDA: %w", err)
-		log.Printf("product search failed (%s). retrying in 500ms", err)
-		time.Sleep(100 * time.Millisecond)
+		log.Printf("product search failed (%s). retrying in %dms", err, searchProductRetryMs)
+		time.Sleep(searchProductRetryMs * time.Millisecond)
 	}
 
 	if err != nil {
-		return err
+		return fmt.Errorf("retry count exceeded: %w", err)
 	}
 
 	// associate the asset with the shopify product

@@ -194,6 +194,9 @@ func (c *Client) uploadPart(p *asset.UploadPartition) error {
 	return nil
 }
 
+// ConfirmUpload is the final stage of creating an asset in DDA.
+// Call this method after all partitions of the asset have already
+// been successfully uploaded.
 func (c *Client) ConfirmUpload(i *asset.Image) error {
 	payload := UploadConfirmationRequest{
 		UploadID: i.UploadID,
