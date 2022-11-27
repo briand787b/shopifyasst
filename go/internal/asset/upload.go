@@ -11,7 +11,7 @@ const (
 	// milliseconds to wait before retry
 	searchProductRetryMs = 100
 	// # of retries before considered failure
-	searchProductRetryCount = 10
+	searchProductRetryCount = 100
 )
 
 // UploadImage is the entrypoint for asset upload.  It creates/uploads
