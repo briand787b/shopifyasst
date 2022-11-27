@@ -85,19 +85,6 @@ def createShopifyProduct(filename, token, url, tags):
             shopifyProductImage(filename),
         ]
     })
-    # product.title = image_title(filename)
-    # product.product_type = 'Image'
-    # product.tags = tags
-    # product.variants = [
-    #     shopify.Variant({
-    #         "title": "Unlimited Downloads",
-    #         "price": "20.00",
-    #         "taxable": True,
-    #         "inventory_policy": "continue",
-    #         "requires_shipping": False
-    #     }),
-    # ]
-    # product.images = [shopifyProductImage(filename)]
     product.save()
 
     shopify.ShopifyResource.clear_session()
