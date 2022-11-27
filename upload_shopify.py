@@ -24,11 +24,7 @@ def main():
                         help='shopify store url')
 
     args = parser.parse_args()
-    # print(f'tags from cli args: {args.tags}')
-    # print(f'filename from cli args: {args.filename}')
-
     parsedTags = parseTags(args.tags)
-    # print(f'parsed tags: {parsedTags}')
 
     product_id = createShopifyProduct(
         args.filename,
@@ -58,6 +54,13 @@ def parseTags(tagArr):
 def image_title(filename):
     return os.path.splitext(os.path.basename(filename))[0]
 
+def shopifyProductImage(filename):
+    with open(filename, 'rb') as f:
+        contents = f.read()
+
+    img = shopify.Image()
+    img.attach_image(contents, image_title(filename))
+    return img
 
 def createShopifyProduct(filename, token, url, tags):
     session = shopify.Session(url, api_version, token)
@@ -66,7 +69,6 @@ def createShopifyProduct(filename, token, url, tags):
     product = shopify.Product()
     product.title = image_title(filename)
     product.product_type = 'Image'
-    # product.attributes['tags'] = tags
     product.tags = tags
     product.variants = [
         shopify.Variant({
@@ -81,18 +83,7 @@ def createShopifyProduct(filename, token, url, tags):
     product.save()
 
     shopify.ShopifyResource.clear_session()
-    # print(f'{product.id}')
     return product.id
-
-
-def shopifyProductImage(filename):
-    with open(filename, 'rb') as f:
-        contents = f.read()
-
-    img = shopify.Image()
-    img.attach_image(contents, image_title(filename))
-    return img
-
 
 if __name__ == '__main__':
     main()
