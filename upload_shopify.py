@@ -7,20 +7,21 @@ import os.path
 # constants
 api_version = '2021-10'
 
+
 def main():
     parser = argparse.ArgumentParser(
-        prog = 'Uploader',
-        description = 'Creates Shopify product'
+        prog='Uploader',
+        description='Creates Shopify product'
     )
 
     parser.add_argument('tags', type=str, nargs='+',
-        help='tags from image EXIF data')
+                        help='tags from image EXIF data')
     parser.add_argument('--filename', dest='filename',
-        help='name of image file to create from')
+                        help='name of image file to create from')
     parser.add_argument('--token', dest='token',
-        help='shopify private app password')
+                        help='shopify private app password')
     parser.add_argument('--url', dest='url',
-        help='shopify store url')
+                        help='shopify store url')
 
     args = parser.parse_args()
     # print(f'tags from cli args: {args.tags}')
@@ -36,14 +37,8 @@ def main():
         parsedTags,
     )
 
-    createShopifyProductImage(
-        args.filename,
-        product_id,
-        args.token,
-        args.url,
-    )
-
     print(product_id)
+
 
 def parseTags(tagArr):
     attrs = []
@@ -59,35 +54,45 @@ def parseTags(tagArr):
     attrs.append(" ".join(tmp_attrs))
     return attrs
 
+
 def image_title(filename):
     return os.path.splitext(os.path.basename(filename))[0]
+
 
 def createShopifyProduct(filename, token, url, tags):
     session = shopify.Session(url, api_version, token)
     shopify.ShopifyResource.activate_session(session)
-    
+
     product = shopify.Product()
     product.title = image_title(filename)
-    product.attributes['tags'] = tags
+    product.product_type = 'Image'
+    # product.attributes['tags'] = tags
+    product.tags = tags
+    product.variants = [
+        shopify.Variant({
+            "title": "Unlimited Downloads",
+            "price": "20.00",
+            "taxable": True,
+            "inventory_policy": "continue",
+            "requires_shipping": False
+        }),
+    ]
+    product.images = [shopifyProductImage(filename)]
     product.save()
 
     shopify.ShopifyResource.clear_session()
     # print(f'{product.id}')
     return product.id
 
-def createShopifyProductImage(filename, product_id, token, url):
+
+def shopifyProductImage(filename):
     with open(filename, 'rb') as f:
         contents = f.read()
 
-    session = shopify.Session(url, api_version, token)
-    shopify.ShopifyResource.activate_session(session)
-
     img = shopify.Image()
-    img.product_id = product_id
     img.attach_image(contents, image_title(filename))
-    img.save()
+    return img
 
-    shopify.ShopifyResource.clear_session()
 
 if __name__ == '__main__':
     main()

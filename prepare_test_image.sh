@@ -14,7 +14,7 @@ else
     mkdir $IMAGE_SRC_DIR
 fi
 
-IMAGE_DST='./images/Small Image V20.jpg'
+IMAGE_DST='./images/Small Image V23.jpg'
 if [ -n "$1" ]; then
     IMAGE_DST="./images/$1"
 fi

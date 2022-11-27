@@ -5,9 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"mime"
 	"os"
 	"path/filepath"
 	"sync"
+)
+
+const (
+	mimeTypeJPEG = "image/jpeg"
 )
 
 // Image represents any digital image, though it is currently only
@@ -31,12 +36,9 @@ func NewImage(filename string) (*Image, error) {
 		return nil, fmt.Errorf("could not stat file %s: %w", filename, err)
 	}
 
-	var mime string
-	switch ext := filepath.Ext(fi.Name()); ext {
-	case ".jpg", ".jpeg":
-		mime = "image/jpeg"
-	default:
-		return nil, fmt.Errorf("unknown file extension: '%s'", ext)
+	mime := mime.TypeByExtension(filepath.Ext(filename))
+	if mime != mimeTypeJPEG {
+		return nil, fmt.Errorf("mime type is not %s (is: '%s')", mimeTypeJPEG, mime)
 	}
 
 	fd, err := os.Open(filename)
