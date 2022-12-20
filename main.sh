@@ -39,8 +39,7 @@ fi
 
 echo "upload files: $UPLOAD_FILES"
 
-for UF in "$UPLOAD_FILES"
-do
+while IFS= read -r UF; do
     UPLOAD_PATH="./images/$UF"
 
     echo downloading "$UF"...
@@ -68,4 +67,4 @@ do
     
     rm "$UPLOAD_PATH"
     aws s3 rm "$S3_IMAGE_BUCKET/$UF"
-done
+done <<< "$UPLOAD_FILES"
