@@ -1,7 +1,7 @@
 # Uploader for CityStock Shopify App
 
 ## Description
-This script is meant to upload images to Shopify and all dependent third-party plugins.  Once installed on a VM in AWS EC2, this script will cycle through the `citystock-uploader-kevin` bucket, create a Shopify product from the image metadata, upload the asset to the third-party plugin, and then link the asset to the Shopify product.  At this moment, everything is hard-coded.  The shell script that uploads images will only work on a Linux machine.  The installation instructions below only apply Ubuntu, but may be applicable to any Unix-like system that has `exiftool` available through its package manager when that package manager's instructions are substituted for `apt`.
+This script is meant to upload images to Shopify and all dependent third-party plugins.  Once installed on a VM in AWS EC2, this script will cycle through the `citystock-uploader-kevin` bucket, create a Shopify product from the image metadata, upload the asset to the third-party plugin, and then link the asset to the Shopify product.  The shell script that uploads images will only work on a Linux machine.  The installation instructions below only apply to Ubuntu, but may be applicable to any Unix-like system that has the `exiftool` available.
 
 ## Installation
 ### Create VM
@@ -14,7 +14,7 @@ Inside of the AWS console, create an EC2 instance:
 * VPC: Cluster-VPC
 * Subnet: Public-Subnet-1
 * Auto-Assign Public IP: Enable
-* Security Group: ssh-anywhere 
+* Security Group: ssh-anywhere
 
 Inside of the AWS console, create an IAM user for the EC2 instance:
 * Access Type: Programmatic access
@@ -39,6 +39,8 @@ sudo reboot
 # log back in as before
 sudo apt install exiftool awscli python3.10-venv python3-pip
 aws configure # provide access key and pw from console
+
+
 aws s3 cp $S3_SCRIPT_BUCKET/uploader.tgz $HOME/uploader.tgz
 mkdir $HOME/uploader
 tar xzvf $HOME/uploader.tgz -C $HOME/uploader
