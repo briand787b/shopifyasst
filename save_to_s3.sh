@@ -2,7 +2,13 @@
 
 # *****************************************************************************
 # NOTES:
-# This script is used to upload the tarred, zipped source code to aws s3.  
+# This file is deprecated and should be deleted after successful first
+# iteration of this project
+# *****************************************************************************
+
+# *****************************************************************************
+# NOTES:
+# This script is used to upload the tarred, zipped source code to aws s3.
 # This is because there are passwords hardcoded in the source code which will
 # eventually need to be removed
 # *****************************************************************************

@@ -14,7 +14,7 @@ else
     mkdir $IMAGE_SRC_DIR
 fi
 
-IMAGE_DST='./images/Small Image V25.jpg'
+IMAGE_DST='./images/Small Image V26.jpg'
 if [ -n "$1" ]; then
     IMAGE_DST="./images/$1"
 fi
@@ -34,7 +34,7 @@ if [ -n "$(aws s3 ls $S3_IMAGE_BUCKET)" ]; then
         echo cannot proceed with non-empty bucket
         exit 1
     fi
-        
+    
     aws s3 rm $S3_IMAGE_BUCKET --recursive
 fi
 aws s3 cp "$IMAGE_DST" $S3_IMAGE_BUCKET

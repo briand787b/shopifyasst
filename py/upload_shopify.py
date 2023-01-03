@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import argparse
 import shopify
 import os.path

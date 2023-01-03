@@ -37,19 +37,25 @@ sudo apt update
 sudo apt upgrade -y
 sudo reboot
 # log back in as before
-sudo apt install exiftool awscli python3.10-venv python3-pip
+sudo apt install exiftool awscli golang python3.10-venv python3-pip
 aws configure # provide access key and pw from console
-
-
-aws s3 cp $S3_SCRIPT_BUCKET/uploader.tgz $HOME/uploader.tgz
-mkdir $HOME/uploader
-tar xzvf $HOME/uploader.tgz -C $HOME/uploader
-cd $HOME/uploader
-python3 -m venv $HOME/uploader
-pip install --upgrade ShopifyAPI
+# clone repo
+git clone git@github.com:briand787b/shopifyasst.git
+cd shopifyasst
+# set up secret env vars
+cp example.env .env # fill in secret values
+# install py deps.  You may want to create a venv before this
+cd py
+python -m venv venv # optional
+source py/venv/bin/activate
+pip install -r py/requirements.txt
 ```
 
 ## How to Run
 ```bash
+# if you did not compile go binary yet
+./main.sh --recompile
+
+# otherwise
 ./main.sh
 ```

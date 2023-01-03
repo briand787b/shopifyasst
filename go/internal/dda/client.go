@@ -112,11 +112,11 @@ func (c *Client) CreateMetaData(i *asset.Image) error {
 }
 
 func (c *Client) UploadParts(i *asset.Image) error {
-	partIDs := i.GetPartitionIDs()
+	partIDs := i.PartitionIDs()
 
 	parts := make([]asset.UploadPartition, len(partIDs))
 	for idx, partID := range partIDs {
-		uploadPart, err := i.GetPartition(partID)
+		uploadPart, err := i.Partition(partID)
 		if err != nil {
 			return fmt.Errorf("could not get image partition: %w", err)
 		}
@@ -202,8 +202,8 @@ func (c *Client) ConfirmUpload(i *asset.Image) error {
 		UploadID: i.UploadID,
 	}
 
-	for _, partID := range i.GetPartitionIDs() {
-		part, err := i.GetPartition(partID)
+	for _, partID := range i.PartitionIDs() {
+		part, err := i.Partition(partID)
 		if err != nil {
 			return fmt.Errorf("could not get partition: %w", err)
 		}
