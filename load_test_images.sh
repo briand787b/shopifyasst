@@ -5,6 +5,9 @@ source .env
 
 # cli args
 #
+# REMOVE being non-empty string indicates that the AWS bucket should
+# be cleaned before any new file(s) are uploaded
+REMOVE=
 # SMALLEST being non-empty string indicates that the script should pull only
 # the smallest image from source dir
 SMALLEST=
@@ -18,7 +21,7 @@ declare -a FILES
 
 function usage ()
 {
-    printf "usage: %s [-h] [-d IMAGE_SRC_DIR] [-s | file1 ... filen]\n
+    printf "usage: %s [-h] [-d IMAGE_SRC_DIR] [-r] [-s | file1 ... filen]\n
 
 description: Upload jpeg from local system to S3 bucket that shopifyasst can
     pull from.  Ensure that you have a valid .env file to pull configs from.
@@ -26,6 +29,7 @@ description: Upload jpeg from local system to S3 bucket that shopifyasst can
 flags:
     -h: print this help info
     -d: provide directory path to search for images.  Defaults to '$PWD/images'
+    -r: remove all existant files, if any exist, from the bucket
     -s: grabs smallest image in searched dir.  Exclusive to file args
 
 positional args:
@@ -37,8 +41,8 @@ examples:
     Upload all images in $PWD/images
     %s
 
-    Upload smallest image in $PWD/images
-    %s -s
+    Upload smallest image in $PWD/images, cleaning aws bucket beforehand
+    %s -r -s
 
     Upload all images from specified dir
     %s -d /path/to/images
@@ -48,18 +52,21 @@ examples:
     \n" ${0##*/} ${0##*/} ${0##*/} ${0##*/} ${0##*/} >& 2
 }
 
-while getopts ':hsd:' OPTION
+while getopts ':hrsd:' OPTION
 do
     case $OPTION in
         h)
             usage
             exit 0
         ;;
-        s)
-            SMALLEST=TRUE
-        ;;
         d)
             IMAGE_SRC_DIR="$OPTARG"
+        ;;
+        r)
+            REMOVE=TRUE
+        ;;
+        s)
+            SMALLEST=TRUE
         ;;
         ?)
             usage
@@ -108,9 +115,8 @@ echo "${#FILES[@]} file(s) will be uploaded to AWS"
 for FILE in "${FILES[@]}"; do
     echo "copying file '$FILE' to AWS"
 
-    # upload and clean up
-    if [ -n "$(aws s3 ls $S3_IMAGE_BUCKET)" ]; then
-        echo "WARNING: S3 bucket $S3_IMAGE_BUCKET is not empty"
+    if [ -n "$(aws s3 ls $S3_IMAGE_BUCKET)" -a -n "$REMOVE" ]; then
+        echo "WARNING: You will delete all files in S3 bucket $S3_IMAGE_BUCKET"
         read -p 'Delete all files in bucket [y/N]: ' DELETE
         DELETE="$(echo "$DELETE" | tr '[:lower:]' '[:upper:]')"
         if [ "$DELETE" != 'Y' ]; then
@@ -125,8 +131,7 @@ for FILE in "${FILES[@]}"; do
     rm "${FILE}_original" # exiftool creates this
 
     UUID=$(uuidgen)
-    aws s3 cp "$FILE" "$S3_IMAGE_BUCKET/$UUID"
-    rm "$FILE"
+    aws s3 cp "$FILE" "$S3_IMAGE_BUCKET/$UUID.jpg"
 done
 
 echo exiting successfully...
