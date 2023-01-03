@@ -8,8 +8,6 @@ source .env
 # SMALLEST being non-empty string indicates that the script should pull only
 # the smallest image from source dir
 SMALLEST=
-# FILE_NAMES is the array of file names that should be uploaded to S3
-FILE_NAMES=
 # IMAGE_SRC_DIR is the dir to search for images
 IMAGE_SRC_DIR="$PWD/images"
 
@@ -88,18 +86,15 @@ if [ -z "$*" ]; then
     LS_OUTPUT=("$(ls -S --reverse $IMAGE_SRC)")
     echo ls output: "$LS_OUTPUT"
     if [ -n "$SMALLEST" ]; then
-        LS_OUTPUT=$(echo $LS_OUTPUT | head -n 1)
+        LS_OUTPUT=$(echo "$LS_OUTPUT" | head -n 1)
     fi
 
     while IFS= read -r FILE; do
-        echo file: "$FILE"
         FILES+=("$FILE")
     done <<< "$LS_OUTPUT"
 else
-    echo args: "$@"
     for ARG in "$@"; do
         FILE=$(ls "$IMAGE_SRC_DIR/$ARG")
-        echo "file: $FILE"
         FILES+=("$FILE")
     done
 fi
@@ -109,16 +104,13 @@ if [ -z "$FILES" ]; then
     exit 5
 fi
 
-# declare -a NEW_FILES
+echo "${#FILES[@]} file(s) will be uploaded to AWS"
 for FILE in "${FILES[@]}"; do
-    exiftool -Subject='louisiana, new orleans' "$FILE"
-    rm "${FILE}_original" # exiftool creates this
-
-    echo copying files to AWS
+    echo "copying file '$FILE' to AWS"
 
     # upload and clean up
     if [ -n "$(aws s3 ls $S3_IMAGE_BUCKET)" ]; then
-        echo "S3 bucket $S3_IMAGE_BUCKET is not empty"
+        echo "WARNING: S3 bucket $S3_IMAGE_BUCKET is not empty"
         read -p 'Delete all files in bucket [y/N]: ' DELETE
         DELETE="$(echo "$DELETE" | tr '[:lower:]' '[:upper:]')"
         if [ "$DELETE" != 'Y' ]; then
@@ -129,56 +121,13 @@ for FILE in "${FILES[@]}"; do
         aws s3 rm $S3_IMAGE_BUCKET --recursive
     fi
 
+    exiftool -Subject='louisiana, new orleans' "$FILE"
+    rm "${FILE}_original" # exiftool creates this
+
     UUID=$(uuidgen)
     aws s3 cp "$FILE" "$S3_IMAGE_BUCKET/$UUID"
     rm "$FILE"
 done
 
-echo exiting...
+echo exiting successfully...
 exit 0
-
-
-
-
-
-
-
-
-
-
-# if [ -e $IMAGE_SRC_DIR ]; then
-#     if [ ! -d $IMAGE_SRC_DIR ]; then
-#         echo $IMAGE_SRC_DIR exists but is not a directory
-#         exit 2
-#     fi
-# else
-#     mkdir $IMAGE_SRC_DIR
-# fi
-
-
-
-FILE='./images/Small Image V26.jpg'
-if [ -n "$1" ]; then
-    FILE="./images/$1"
-fi
-
-# select and modify JPEG file
-readonly IMAGE_SRC="$IMAGE_SRC_DIR/*.jpg"
-cp "$(ls -S --reverse $IMAGE_SRC | head -n 1)" "$FILE"
-exiftool -Subject='louisiana, new orleans' "$FILE"
-rm "${FILE}_original" # exiftool creates this
-
-# upload and clean up
-if [ -n "$(aws s3 ls $S3_IMAGE_BUCKET)" ]; then
-    echo "S3 bucket $S3_IMAGE_BUCKET is not empty"
-    read -p 'Delete all files in bucket [y/N]: ' DELETE
-    DELETE="$(echo "$DELETE" | tr '[:lower:]' '[:upper:]')"
-    if [ "$DELETE" != 'Y' ]; then
-        echo cannot proceed with non-empty bucket
-        exit 1
-    fi
-    
-    aws s3 rm $S3_IMAGE_BUCKET --recursive
-fi
-aws s3 cp "$FILE" $S3_IMAGE_BUCKET
-rm "$FILE"
