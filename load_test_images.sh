@@ -11,8 +11,8 @@ REMOVE=
 # SMALLEST being non-empty string indicates that the script should pull only
 # the smallest image from source dir
 SMALLEST=
-# IMAGE_SRC_DIR is the dir to search for images
-IMAGE_SRC_DIR="$PWD/images"
+# IMG_SRC_DIR is the dir to search for images
+IMG_SRC_DIR="$PWD/images"
 
 # global vars
 #
@@ -21,14 +21,14 @@ declare -a FILES
 
 function usage ()
 {
-    printf "usage: %s [-h] [-d IMAGE_SRC_DIR] [-r] [-s | file1 ... filen]\n
+    printf "usage: %s [-h] [-d IMG_SRC_DIR] [-r] [-s | file1 ... filen]\n
 
 description: Upload jpeg from local system to S3 bucket that shopifyasst can
     pull from.  Ensure that you have a valid .env file to pull configs from.
 
 flags:
     -h: print this help info
-    -d: provide directory path to search for images.  Defaults to '$PWD/images'
+    -d: provide directory path to search for images.  Defaults to '$IMG_SRC_DIR'
     -r: remove all existant files, if any exist, from the bucket
     -s: grabs smallest image in searched dir.  Exclusive to file args
 
@@ -38,10 +38,10 @@ positional args:
         include the basename for the files, not the whole path.
 
 examples:
-    Upload all images in $PWD/images
+    Upload all images in $IMG_SRC_DIR
     %s
 
-    Upload smallest image in $PWD/images, cleaning aws bucket beforehand
+    Upload smallest image in $IMG_SRC_DIR, cleaning aws bucket beforehand
     %s -r -s
 
     Upload all images from specified dir
@@ -60,7 +60,7 @@ do
             exit 0
         ;;
         d)
-            IMAGE_SRC_DIR="$OPTARG"
+            IMG_SRC_DIR="$OPTARG"
         ;;
         r)
             REMOVE=TRUE
@@ -83,13 +83,13 @@ if [ -n "$SMALLEST" -a -n "$*" ]; then
     exit 2
 fi
 
-if ! [ -d "$IMAGE_SRC_DIR" ]; then
-    echo "ERROR: '$IMAGE_SRC_DIR' does not exist or is not a directory"
+if ! [ -d "$IMG_SRC_DIR" ]; then
+    echo "ERROR: '$IMG_SRC_DIR' does not exist or is not a directory"
     exit 3
 fi
 
 if [ -z "$*" ]; then
-    IMAGE_SRC="$IMAGE_SRC_DIR/*.jpg"
+    IMAGE_SRC="$IMG_SRC_DIR/*.jpg"
     LS_OUTPUT=("$(ls -S --reverse $IMAGE_SRC)")
     echo ls output: "$LS_OUTPUT"
     if [ -n "$SMALLEST" ]; then
@@ -101,7 +101,7 @@ if [ -z "$*" ]; then
     done <<< "$LS_OUTPUT"
 else
     for ARG in "$@"; do
-        FILE=$(ls "$IMAGE_SRC_DIR/$ARG")
+        FILE=$(ls "$IMG_SRC_DIR/$ARG")
         FILES+=("$FILE")
     done
 fi
