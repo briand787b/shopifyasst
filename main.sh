@@ -53,7 +53,7 @@ while IFS= read -r UF; do
     fi
     
     echo "creating shopify product..."
-    PRODUCT_ID=$(./upload_shopify.py \
+    PRODUCT_ID=$(python3 py/upload_shopify.py \
         $TAGS \
         --filename="$UPLOAD_PATH" \
         --token="$SHOPIFY_TOKEN" \

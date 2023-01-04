@@ -63,7 +63,7 @@ func (i *Image) Close() {
 	}
 }
 
-func (i *Image) GetPartitionIDs() []int {
+func (i *Image) PartitionIDs() []int {
 	i.partitionsMx.RLock()
 	defer i.partitionsMx.RUnlock()
 
@@ -75,7 +75,7 @@ func (i *Image) GetPartitionIDs() []int {
 	return ids
 }
 
-func (i *Image) GetPartition(partID int) (UploadPartition, error) {
+func (i *Image) Partition(partID int) (UploadPartition, error) {
 	i.partitionsMx.RLock()
 	defer i.partitionsMx.RUnlock()
 
