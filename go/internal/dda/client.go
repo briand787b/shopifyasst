@@ -74,28 +74,10 @@ func (c *Client) CreateMetaData(i *asset.Image) error {
 	req.Header.Set("Content-Type", "applicatin/json")
 	log.Printf("[DEBUG] create metadata request headers: %+v", req.Header)
 
-	resp, err := c.client.Do(req)
-	if err != nil {
-		return fmt.Errorf("failed to send request: %w", err)
-	}
-
-	defer resp.Body.Close()
-
-	if code := resp.StatusCode; code != http.StatusOK {
-		return fmt.Errorf("reponse status code not 200 (is: %d)", code)
-	}
-
-	bodyBS, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("response body is unreadable: %w", err)
-	}
-
 	var respBody CreateAssetMetaDataResponse
-	if err := json.Unmarshal(bodyBS, &respBody); err != nil {
-		return fmt.Errorf(
-			"could not marshal %s into %T: %w",
-			string(bodyBS), respBody, err,
-		)
+	err = send(context.Background(), c.client, req, http.StatusOK, &respBody)
+	if err != nil {
+		return fmt.Errorf("request failed: %w", err)
 	}
 
 	i.ID = respBody.ID
@@ -104,7 +86,7 @@ func (c *Client) CreateMetaData(i *asset.Image) error {
 	var uploadPart asset.UploadPartition
 	for _, u := range respBody.Urls {
 		if u.End < 1 {
-			return fmt.Errorf("response suggests using a zero-length partition")
+			return errors.New("response suggests using a zero-length partition")
 		}
 
 		uploadPart.ID = u.Part
@@ -249,22 +231,9 @@ func (c *Client) ConfirmUpload(i *asset.Image) error {
 	req.Header.Set("Content-Type", "applicatin/json")
 	log.Printf("[DEBUG] confirmation request headers: %+v", req.Header)
 
-	resp, err := c.client.Do(req)
+	err = send(context.Background(), c.client, req, http.StatusCreated, nil)
 	if err != nil {
-		return fmt.Errorf("failed to send request: %w", err)
-	}
-
-	defer resp.Body.Close()
-
-	if code := resp.StatusCode; code != http.StatusCreated {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			log.Printf("could not read confirmation resp body: %s", err)
-		} else {
-			log.Printf("confirmation resp body: %s", body)
-		}
-
-		return fmt.Errorf("resp status code not 201 (is: %d)", code)
+		return fmt.Errorf("request failed: %w", err)
 	}
 
 	return nil
@@ -293,22 +262,9 @@ func (c *Client) AssociateShopifyProductWithAsset(productID, assetID string) err
 	req.Header.Set("Content-Type", "applicatin/json")
 	log.Printf("[DEBUG] association request headers: %+v", req.Header)
 
-	resp, err := c.client.Do(req)
+	err = send(context.Background(), c.client, req, http.StatusCreated, nil)
 	if err != nil {
-		return fmt.Errorf("failed to send request: %w", err)
-	}
-
-	defer resp.Body.Close()
-
-	if code := resp.StatusCode; code != http.StatusCreated {
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			log.Printf("could not read association resp body: %s", err)
-		} else {
-			log.Printf("association resp body: %s", body)
-		}
-
-		return fmt.Errorf("resp status code not 201 (is: %d)", code)
+		return fmt.Errorf("request failed: %w", err)
 	}
 
 	return nil
@@ -330,35 +286,10 @@ func (c *Client) GetDDAProductID(shopifyProductID int) (string, error) {
 	req.Header.Set("Content-Type", "applicatin/json")
 	log.Printf("[DEBUG] product list request headers: %+v", req.Header)
 
-	// resp, err := c.client.Do(req)
-	// if err != nil {
-	// 	return "", fmt.Errorf("could not send request: %w", err)
-	// }
-
-	// defer resp.Body.Close()
-
-	// if code := resp.StatusCode; code != http.StatusOK {
-	// 	return "", fmt.Errorf("resp code is not 200 (is %d)", code)
-	// }
-
-	// body, err := io.ReadAll(resp.Body)
-	// if err != nil {
-	// 	return "", fmt.Errorf("could not read response body: %w", err)
-	// }
-
-	// log.Printf("[DEBUG] product list response JSON: %s", body)
-
 	var productListResp ProductListResponse
 	if err := send(context.Background(), c.client, req, http.StatusOK, &productListResp); err != nil {
 		return "", fmt.Errorf("failed to send request: %w", err)
 	}
-	// if err := json.Unmarshal(body, &productListResp); err != nil {
-	// 	return "", fmt.Errorf("could not unmarshal %s into %T: %w",
-	// 		body,
-	// 		productListResp,
-	// 		err,
-	// 	)
-	// }
 
 	searchedProductIDs := make([]int, len(productListResp.Data))
 	for _, product := range productListResp.Data {
@@ -378,7 +309,8 @@ func (c *Client) GetDDAProductID(shopifyProductID int) (string, error) {
 func send(ctx context.Context, client *http.Client, req *http.Request, expCode int, marshalTarget interface{}) error {
 	// this API enforces request limits - use exponential backoff
 	reqTryCount, _ := ctx.Value(reqTryCountCtxKey).(int)
-	time.Sleep(time.Second * time.Duration(math.Pow(math.E, float64(reqTryCount))-1))
+	backoff := math.Pow(math.E, float64(reqTryCount)) - 1
+	time.Sleep(time.Second * time.Duration(backoff))
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -390,8 +322,17 @@ func send(ctx context.Context, client *http.Client, req *http.Request, expCode i
 	if code := resp.StatusCode; code != expCode {
 		if code == http.StatusTooManyRequests {
 			// recursive might not be ideal, but it should work
+			log.Printf("[DEBUG] Attempt #%d failed (%d), backing off...",
+				reqTryCount, code)
 			ctx = context.WithValue(ctx, reqTryCountCtxKey, reqTryCount+1)
 			return send(ctx, client, req, expCode, marshalTarget)
+		}
+
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			log.Printf("could not read failure resp msg body: %s", err)
+		} else {
+			log.Printf("association resp body: %s", body)
 		}
 
 		return fmt.Errorf("expected HTTP status code %d, got %d", expCode, code)
