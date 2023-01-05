@@ -21,6 +21,7 @@
 # *****************************************************************************
 
 set -e
+source .env
 
 if [[ "$1" == '--recompile' ]]; then
     echo recompiling go binary...
@@ -29,18 +30,16 @@ if [[ "$1" == '--recompile' ]]; then
     cd ..
 fi
 
-source .env
-
-UPLOAD_FILES=("$(aws s3 ls $S3_IMAGE_BUCKET | awk '{$1=$2=$3=""; print substr($0, 4)}')")
+UPLOAD_FILES=("$(aws s3 ls $S3_IMAGE_BUCKET --recursive | awk '{$1=$2=$3=""; print substr($0, 4)}')")
 if [ -z "$UPLOAD_FILES" ]; then
     echo 'no files found in s3 bucket, nothing to do...'
     exit 0
 fi
 
-echo "upload files: $UPLOAD_FILES"
+echo "upload files: '$UPLOAD_FILES'"
 
 while IFS= read -r UF; do
-    UPLOAD_PATH="./images/$UF"
+    UPLOAD_PATH="./images/$(basename $UF)"
 
     echo downloading "$UF"...
     aws s3 cp $S3_IMAGE_BUCKET/$"$UF" "$UPLOAD_PATH"
@@ -52,7 +51,7 @@ while IFS= read -r UF; do
         echo 'Warning: no tags found in image EXIF data'
     fi
     
-    echo "creating shopify product..."
+    echo "creating shopify product from image ${UPLOAD_PATH}"
     PRODUCT_ID=$(python3 py/upload_shopify.py \
         $TAGS \
         --filename="$UPLOAD_PATH" \

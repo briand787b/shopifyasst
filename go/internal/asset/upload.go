@@ -8,10 +8,10 @@ import (
 )
 
 const (
-	// milliseconds to wait before retry
-	searchProductRetryMs = 100
+	// seconds to wait before retry
+	searchProductRetrySec = 1
 	// # of retries before considered failure
-	searchProductRetryCount = 100
+	searchProductRetryCount = 60
 )
 
 // UploadImage is the entrypoint for asset upload.  It creates/uploads
@@ -64,8 +64,8 @@ func AssociateImageWithShopifyProduct(ddaAssetID, shopifyProductIDStr string, a 
 		}
 
 		err = fmt.Errorf("cannot find product in DDA: %w", err)
-		log.Printf("product search failed (%s). retrying in %dms", err, searchProductRetryMs)
-		time.Sleep(searchProductRetryMs * time.Millisecond)
+		log.Printf("product search failed (%s). retrying in %ds", err, searchProductRetrySec)
+		time.Sleep(searchProductRetrySec * time.Second)
 	}
 
 	if err != nil {
