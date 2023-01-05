@@ -30,7 +30,9 @@ if [[ "$1" == '--recompile' ]]; then
     cd ..
 fi
 
-UPLOAD_FILES=("$(aws s3 ls $S3_IMAGE_BUCKET --recursive | awk '{$1=$2=$3=""; print substr($0, 4)}')")
+UPLOAD_FILES=("$(aws s3 ls $S3_IMAGE_BUCKET --recursive \
+    | awk '{$1=$2=$3=""; print substr($0, 4)}' \
+    | grep '.jpg$')")
 if [ -z "$UPLOAD_FILES" ]; then
     echo 'no files found in s3 bucket, nothing to do...'
     exit 0
@@ -39,7 +41,8 @@ fi
 echo "upload files: '$UPLOAD_FILES'"
 
 while IFS= read -r UF; do
-    UPLOAD_PATH="./images/$(basename $UF)"
+    FILENAME=$(basename "$UF")
+    UPLOAD_PATH="./images/$FILENAME"
 
     echo downloading "$UF"...
     aws s3 cp $S3_IMAGE_BUCKET/$"$UF" "$UPLOAD_PATH"
