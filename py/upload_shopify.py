@@ -85,7 +85,9 @@ def createShopifyProduct(filename, token, url, tags):
             shopifyProductImage(filename),
         ]
     })
-    product.save()
+    
+    if not product.save():
+        raise Exception(f'Product could not be saved: {product.errors}')
 
     shopify.ShopifyResource.clear_session()
     return product.id
