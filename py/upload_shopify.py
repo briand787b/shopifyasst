@@ -61,6 +61,9 @@ def shopifyProductImage(filename):
 
     img = shopify.Image()
     img.attach_image(contents, image_title(filename))
+    if img.errors:
+        raise Exception(f'image errors: {img.errors}')
+
     return img
 
 
