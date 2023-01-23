@@ -47,6 +47,12 @@ while IFS= read -r UF; do
     echo downloading "$UF"...
     aws s3 cp $S3_IMAGE_BUCKET/$"$UF" "$UPLOAD_PATH"
 
+    IMAGE_SIZE=$(ls -l "$UPLOAD_PATH" | awk '{print $5}')
+    if (( $IMAGE_SIZE >= 20000000 )); then
+        echo image above Shopify size limit, resizing image...
+        convert "$UPLOAD_PATH" -resize '10000000@' "$UPLOAD_PATH"
+    fi
+
     echo extracting tags...
     TAGS=$(exiftool '-Subject' -s -s -s "$UPLOAD_PATH")
 
