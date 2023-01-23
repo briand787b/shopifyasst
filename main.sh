@@ -45,7 +45,8 @@ echo "upload files: '$UPLOAD_FILES'"
 
 while IFS= read -r UF; do
     FILENAME=$(basename "$UF")
-    DOWNLOAD_PATH="${DOWNLOAD_DIR}/$FILENAME"
+    DOWNLOAD_PATH="${DOWNLOAD_DIR}/original_$FILENAME"
+    SHOPIFY_UPLOAD_PATH="${DOWNLOAD_DIR}/$FILENAME"
 
     echo downloading "$UF"...
     aws s3 cp $S3_IMAGE_BUCKET/$"$UF" "$DOWNLOAD_PATH"
@@ -53,10 +54,9 @@ while IFS= read -r UF; do
     IMAGE_SIZE=$(ls -l "$DOWNLOAD_PATH" | awk '{print $5}')
     if (( $IMAGE_SIZE >= 20000000 )); then
         echo image above Shopify size limit, resizing image...
-        RESIZED_PATH="${DOWNLOAD_DIR}/resized_${FILENAME}"
-        convert "$DOWNLOAD_PATH" -resize '10000000@' "$RESIZED_PATH"
+        convert "$DOWNLOAD_PATH" -resize '10000000@' "$SHOPIFY_UPLOAD_PATH"
     else
-        RESIZED_PATH="$DOWNLOAD_PATH"
+        SHOPIFY_UPLOAD_PATH="$DOWNLOAD_PATH"
     fi
 
     echo extracting tags...
@@ -66,10 +66,10 @@ while IFS= read -r UF; do
         echo 'Warning: no tags found in image EXIF data'
     fi
     
-    echo "creating shopify product from image $RESIZED_PATH"
+    echo "creating shopify product from image $SHOPIFY_UPLOAD_PATH"
     PRODUCT_ID=$(python3 py/upload_shopify.py \
         $TAGS \
-        --filename="$RESIZED_PATH" \
+        --filename="$SHOPIFY_UPLOAD_PATH" \
         --token="$SHOPIFY_TOKEN" \
         --url="$SHOPIFY_URL")
     
@@ -80,6 +80,6 @@ while IFS= read -r UF; do
         -token="$DDA_TOKEN"
     
     rm "$DOWNLOAD_PATH"
-    [ "$DOWNLOAD_PATH" != "$RESIZED_PATH" ] && rm "$RESIZED_PATH"
+    [ "$DOWNLOAD_PATH" != "$SHOPIFY_UPLOAD_PATH" ] && rm "$SHOPIFY_UPLOAD_PATH"
     aws s3 rm "$S3_IMAGE_BUCKET/$UF"
 done <<< "$UPLOAD_FILES"
