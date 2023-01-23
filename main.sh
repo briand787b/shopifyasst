@@ -56,8 +56,7 @@ while IFS= read -r UF; do
         echo image above Shopify size limit, resizing image...
         convert "$DOWNLOAD_PATH" -resize '10000000@' "$SHOPIFY_UPLOAD_PATH"
     else
-        # TODO: fix inefficiency here (don't need to copy whole object)
-        cp "$DOWNLOAD_PATH" "$SHOPIFY_UPLOAD_PATH"
+        cp -l "$DOWNLOAD_PATH" "$SHOPIFY_UPLOAD_PATH"
     fi
 
     echo extracting tags...
