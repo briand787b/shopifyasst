@@ -37,7 +37,7 @@ sudo apt update
 sudo apt upgrade -y
 sudo reboot
 # log back in as before
-sudo apt install exiftool awscli golang python3.10-venv python3-pip
+sudo apt install exiftool awscli golang python3.10-venv python3-pip imagemagick
 aws configure # provide access key and pw from console
 # clone repo
 git clone git@github.com:briand787b/shopifyasst.git

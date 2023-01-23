@@ -23,6 +23,9 @@
 set -e
 source .env
 
+readonly DOWNLOAD_DIR='./images'
+echo DOWNLOAD_DIR is "$DOWNLOAD_DIR"
+
 if [[ "$1" == '--recompile' ]]; then
     echo recompiling go binary...
     cd go
@@ -42,37 +45,41 @@ echo "upload files: '$UPLOAD_FILES'"
 
 while IFS= read -r UF; do
     FILENAME=$(basename "$UF")
-    UPLOAD_PATH="./images/$FILENAME"
+    DOWNLOAD_PATH="${DOWNLOAD_DIR}/$FILENAME"
 
     echo downloading "$UF"...
-    aws s3 cp $S3_IMAGE_BUCKET/$"$UF" "$UPLOAD_PATH"
+    aws s3 cp $S3_IMAGE_BUCKET/$"$UF" "$DOWNLOAD_PATH"
 
-    IMAGE_SIZE=$(ls -l "$UPLOAD_PATH" | awk '{print $5}')
+    IMAGE_SIZE=$(ls -l "$DOWNLOAD_PATH" | awk '{print $5}')
     if (( $IMAGE_SIZE >= 20000000 )); then
         echo image above Shopify size limit, resizing image...
-        convert "$UPLOAD_PATH" -resize '10000000@' "$UPLOAD_PATH"
+        RESIZED_PATH="${DOWNLOAD_DIR}/resized_${FILENAME}"
+        convert "$DOWNLOAD_PATH" -resize '10000000@' "$RESIZED_PATH"
+    else
+        RESIZED_PATH="$DOWNLOAD_PATH"
     fi
 
     echo extracting tags...
-    TAGS=$(exiftool '-Subject' -s -s -s "$UPLOAD_PATH")
+    TAGS=$(exiftool '-Subject' -s -s -s "$DOWNLOAD_PATH")
 
     if [ -z "$TAGS" ]; then
         echo 'Warning: no tags found in image EXIF data'
     fi
     
-    echo "creating shopify product from image ${UPLOAD_PATH}"
+    echo "creating shopify product from image $RESIZED_PATH"
     PRODUCT_ID=$(python3 py/upload_shopify.py \
         $TAGS \
-        --filename="$UPLOAD_PATH" \
+        --filename="$RESIZED_PATH" \
         --token="$SHOPIFY_TOKEN" \
         --url="$SHOPIFY_URL")
     
-    echo "uploading asset ($UPLOAD_PATH) to shopify and linking to product ($PRODUCT_ID)..."
+    echo "uploading asset ($DOWNLOAD_PATH) to shopify and linking to product ($PRODUCT_ID)..."
     ./upload_dda \
-        -filename="$UPLOAD_PATH" \
+        -filename="$DOWNLOAD_PATH" \
         -product="$PRODUCT_ID" \
         -token="$DDA_TOKEN"
     
-    rm "$UPLOAD_PATH"
+    rm "$DOWNLOAD_PATH"
+    [ "$DOWNLOAD_PATH" != "$RESIZED_PATH" ] && rm "$RESIZED_PATH"
     aws s3 rm "$S3_IMAGE_BUCKET/$UF"
 done <<< "$UPLOAD_FILES"
