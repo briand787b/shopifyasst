@@ -56,7 +56,8 @@ while IFS= read -r UF; do
         echo image above Shopify size limit, resizing image...
         convert "$DOWNLOAD_PATH" -resize '10000000@' "$SHOPIFY_UPLOAD_PATH"
     else
-        SHOPIFY_UPLOAD_PATH="$DOWNLOAD_PATH"
+        # TODO: fix inefficiency here (don't need to copy whole object)
+        cp "$DOWNLOAD_PATH" "$SHOPIFY_UPLOAD_PATH"
     fi
 
     echo extracting tags...
@@ -79,7 +80,6 @@ while IFS= read -r UF; do
         -product="$PRODUCT_ID" \
         -token="$DDA_TOKEN"
     
-    rm "$DOWNLOAD_PATH"
-    [ "$DOWNLOAD_PATH" != "$SHOPIFY_UPLOAD_PATH" ] && rm "$SHOPIFY_UPLOAD_PATH"
+    rm "$DOWNLOAD_PATH" "$SHOPIFY_UPLOAD_PATH"
     aws s3 rm "$S3_IMAGE_BUCKET/$UF"
 done <<< "$UPLOAD_FILES"
