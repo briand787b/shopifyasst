@@ -52,7 +52,7 @@ while IFS= read -r UF; do
     aws s3 cp $S3_IMAGE_BUCKET/$"$UF" "$DOWNLOAD_PATH"
 
     IMAGE_SIZE=$(ls -l "$DOWNLOAD_PATH" | awk '{print $5}')
-    if (( $IMAGE_SIZE >= 20000000 )); then
+    if (( $IMAGE_SIZE >= 15000000 )); then
         echo image above Shopify size limit, resizing image...
         convert "$DOWNLOAD_PATH" -resize '10000000@' "$SHOPIFY_UPLOAD_PATH"
     else
