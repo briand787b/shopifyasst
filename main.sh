@@ -24,7 +24,7 @@ set -e
 source .env
 
 readonly DOWNLOAD_DIR='./images'
-echo DOWNLOAD_DIR is "$DOWNLOAD_DIR"
+readonly MAX_PREVIEW_SIZE=5000000
 
 if [[ "$1" == '--recompile' ]]; then
     echo recompiling go binary...
@@ -52,9 +52,9 @@ while IFS= read -r UF; do
     aws s3 cp $S3_IMAGE_BUCKET/$"$UF" "$DOWNLOAD_PATH"
 
     IMAGE_SIZE=$(ls -l "$DOWNLOAD_PATH" | awk '{print $5}')
-    if (( $IMAGE_SIZE >= 15000000 )); then
+    if (( $IMAGE_SIZE >= $MAX_PREVIEW_SIZE )); then
         echo image above Shopify size limit, resizing image...
-        convert "$DOWNLOAD_PATH" -resize '10000000@' "$SHOPIFY_UPLOAD_PATH"
+        convert "$DOWNLOAD_PATH" -resize "${MAX_PREVIEW_SIZE}@" "$SHOPIFY_UPLOAD_PATH"
     else
         cp -l "$DOWNLOAD_PATH" "$SHOPIFY_UPLOAD_PATH"
     fi
