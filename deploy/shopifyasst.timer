@@ -1,0 +1,11 @@
+[Unit]
+Description=CityStock Shopify assistant timer
+Requires=shopifyasst.service
+
+[Timer]
+Unit=shopifyasst.service
+OnBootSec=60
+OnUnitActiveSec=60
+
+[Install]
+WantedBy=timers.target
