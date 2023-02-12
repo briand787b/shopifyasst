@@ -4,4 +4,4 @@ Wants=shopifyasst.timer
 
 [Service]
 Type=onehsot
-ExecStart=/home/ubuntu/shopifyasst/main.sh
+ExecStart=/home/ubuntu/shopifyasst/deploy/service.sh
