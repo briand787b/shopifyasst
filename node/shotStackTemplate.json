@@ -1,0 +1,56 @@
+{
+  "timeline": {
+    "background": "#000000",
+    "tracks": [
+      {
+        "clips": [
+          {
+            "asset": {
+              "type": "image",
+              "src": "https://citystock.s3.us-east-2.amazonaws.com/citystock-watermark%404x.png?response-content-disposition=inline&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEGcaCXVzLWVhc3QtMiJGMEQCIDddxUk6Uf1Qc5AO%2F7FGDUQdqnFmpkiA5wOVYwI6KPv3AiAk4TP%2FYRnvu0cYBk9XRBSkbBTUdnIK8fJ%2B5vWGBcob8CrtAgjx%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAAaDDQwNTg1ODk4NTAwMCIMAb4GKpnmSRw4bpcIKsECAXUFSnAblriI0xtwtX3qzTmXI14ZYYG%2FMI5RzkCSGfPNwceG6rAuoBxVCwtnNLYNgsA9Fqjxi%2BWE8ewX9q%2B03PLU%2FNDXQTm0zBJWppAypw6%2Bdnqkk21sG7xHUy8KVzfYc8nlWU1Z9Kopceov3uZcvB%2FzEOx4Arck6EjQit2gRqWmViauM8Qo2Y4L%2BmDM7CuHLcuxZQnUifzHzxqfrW4kccghdebilEMPhXlTjJ1nXXcFHT%2BYTJH9VegCEADvG28RKlhkmEkTeso%2FTWoiwuQL1%2FKITl551NDwaw9oLV4VASq%2FX13v0kW%2BUhZDCj4XdLJTOQKayJ6nQ7IbNlgk32jrrgROzzXFIIWhdXlztHqphlg9a%2BDPO7M6%2FjhQuqCKL1chOf9TGkIxsErurm12fRM05KAk5IodLq8IhoKeRe98Z4gvMPCuqZ8GOrQCcTbh0eZPYyxq3movapOHTc3PkGbuOVYQWDt2nSxhfqx6u3N56W3abxPK7bUSwvd47UJJFQDXgDpFNKQG%2BzeVFDJJ%2BAtkh6EvI0FnO9VDzZNWqoWuUV2A3sl0kRVNqRnjm2I6HmAJpgBmac%2Bbk2%2BSAlMXLpmqMcbg970XN2tuFvxu50KDaf%2BMu812J5FlRSluRkRk%2B6hIR7%2BCaHrKF%2FfqBJFP6FHuf2byzvtwY8IOftEw%2F1hcQtSCSRYyO87YJqCcNa31KaymkLI91%2FCvKSXll0q8XwKYs8LXcCfc%2FWsDZYHGHv6ZwD0JYQ6%2FydumlVXzwCUyS38dT0it%2FqxNrMYLvzjH7ZnnnaRQTiMh5u3ebIQrgBQv3oEAj5RQHAR89xftfKxasBYCQGGY2FwFuBN3PZjvDUE%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20230213T160418Z&X-Amz-SignedHeaders=host&X-Amz-Expires=43200&X-Amz-Credential=ASIAV47YUUQULRIQBXFA%2F20230213%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=c0225895e8b646c083e541a7832134459ac22c7a1ed8bb05c4f2c4532090d57e"
+            },
+            "start": 0,
+            "length": 30,
+            "fit": "none",
+            "scale": 0.33,
+            "opacity": 0.5,
+            "position": "center",
+            "offset": {
+              "x": -0.04,
+              "y": 0.04
+            }
+          }
+        ]
+      },
+      {
+        "clips": [
+          {
+            "asset": {
+              "type": "video",
+              "src": "https://citystock.s3.us-east-2.amazonaws.com/unwatermarked-videos/sample1.mp4?response-content-disposition=inline&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEGcaCXVzLWVhc3QtMiJGMEQCIDddxUk6Uf1Qc5AO%2F7FGDUQdqnFmpkiA5wOVYwI6KPv3AiAk4TP%2FYRnvu0cYBk9XRBSkbBTUdnIK8fJ%2B5vWGBcob8CrtAgjx%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAAaDDQwNTg1ODk4NTAwMCIMAb4GKpnmSRw4bpcIKsECAXUFSnAblriI0xtwtX3qzTmXI14ZYYG%2FMI5RzkCSGfPNwceG6rAuoBxVCwtnNLYNgsA9Fqjxi%2BWE8ewX9q%2B03PLU%2FNDXQTm0zBJWppAypw6%2Bdnqkk21sG7xHUy8KVzfYc8nlWU1Z9Kopceov3uZcvB%2FzEOx4Arck6EjQit2gRqWmViauM8Qo2Y4L%2BmDM7CuHLcuxZQnUifzHzxqfrW4kccghdebilEMPhXlTjJ1nXXcFHT%2BYTJH9VegCEADvG28RKlhkmEkTeso%2FTWoiwuQL1%2FKITl551NDwaw9oLV4VASq%2FX13v0kW%2BUhZDCj4XdLJTOQKayJ6nQ7IbNlgk32jrrgROzzXFIIWhdXlztHqphlg9a%2BDPO7M6%2FjhQuqCKL1chOf9TGkIxsErurm12fRM05KAk5IodLq8IhoKeRe98Z4gvMPCuqZ8GOrQCcTbh0eZPYyxq3movapOHTc3PkGbuOVYQWDt2nSxhfqx6u3N56W3abxPK7bUSwvd47UJJFQDXgDpFNKQG%2BzeVFDJJ%2BAtkh6EvI0FnO9VDzZNWqoWuUV2A3sl0kRVNqRnjm2I6HmAJpgBmac%2Bbk2%2BSAlMXLpmqMcbg970XN2tuFvxu50KDaf%2BMu812J5FlRSluRkRk%2B6hIR7%2BCaHrKF%2FfqBJFP6FHuf2byzvtwY8IOftEw%2F1hcQtSCSRYyO87YJqCcNa31KaymkLI91%2FCvKSXll0q8XwKYs8LXcCfc%2FWsDZYHGHv6ZwD0JYQ6%2FydumlVXzwCUyS38dT0it%2FqxNrMYLvzjH7ZnnnaRQTiMh5u3ebIQrgBQv3oEAj5RQHAR89xftfKxasBYCQGGY2FwFuBN3PZjvDUE%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20230213T155631Z&X-Amz-SignedHeaders=host&X-Amz-Expires=43200&X-Amz-Credential=ASIAV47YUUQULRIQBXFA%2F20230213%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=a2adc088d91331cbd3a911ca12104495ea299a198204d2faf7bff44041bd1fc7"
+            },
+            "start": 0,
+            "length": 30
+          }
+        ]
+      }
+    ]
+  },
+  "output": {
+    "format": "mp4",
+    "resolution": "sd",
+    "destinations": [
+      {
+        "provider": "s3",
+        "options": {
+          "region": "us-east-2",
+          "bucket": "citystock/watermarked-videos"
+        }
+      },
+      {
+        "provider": "shotstack",
+        "exclude": true
+      }
+    ]
+  }
+}
