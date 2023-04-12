@@ -46,7 +46,7 @@ func NewDownloadableDigitalAssetsClient(token string) *Client {
 }
 
 // CreateMetaData stores asset metadata in DDA
-func (c *Client) CreateMetaData(i *asset.Image) error {
+func (c *Client) CreateMetaData(i *asset.Asset) error {
 	body := CreateAssetMetaDataRequest{
 		Name: filepath.Base(i.Filename),
 		Size: i.Size,
@@ -100,7 +100,7 @@ func (c *Client) CreateMetaData(i *asset.Image) error {
 	return nil
 }
 
-func (c *Client) UploadParts(i *asset.Image) error {
+func (c *Client) UploadParts(i *asset.Asset) error {
 	partIDs := i.PartitionIDs()
 
 	parts := make([]asset.UploadPartition, len(partIDs))
@@ -186,7 +186,7 @@ func (c *Client) uploadPart(p *asset.UploadPartition) error {
 // ConfirmUpload is the final stage of creating an asset in DDA.
 // Call this method after all partitions of the asset have already
 // been successfully uploaded.
-func (c *Client) ConfirmUpload(i *asset.Image) error {
+func (c *Client) ConfirmUpload(i *asset.Asset) error {
 	payload := UploadConfirmationRequest{
 		UploadID: i.UploadID,
 	}

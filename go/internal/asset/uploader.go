@@ -2,7 +2,7 @@ package asset
 
 // Uploader abstracts the methods required to
 type Uploader interface {
-	CreateMetaData(i *Image) error
-	UploadParts(i *Image) error
-	ConfirmUpload(i *Image) error
+	CreateMetaData(i *Asset) error
+	UploadParts(i *Asset) error
+	ConfirmUpload(i *Asset) error
 }

@@ -40,13 +40,13 @@ func main() {
 
 	ddaClient := dda.NewDownloadableDigitalAssetsClient(*authToken)
 
-	img, err := asset.UploadImage(*filename, ddaClient)
+	img, err := asset.UploadAsset(*filename, ddaClient)
 	if err != nil {
 		fmt.Printf("could not create DDA image asset: %s\n", err)
 		os.Exit(40)
 	}
 
-	err = asset.AssociateImageWithShopifyProduct(img.ID, *productID, ddaClient)
+	err = asset.AssociateAssetWithShopifyProduct(img.ID, *productID, ddaClient)
 	if err != nil {
 		fmt.Printf("could not associate asset with Shopify product: %s\n", err)
 		os.Exit(50)
