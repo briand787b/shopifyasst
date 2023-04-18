@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 SHOPIFY_PRODUCT_ID_OUT_PATH=output.txt \
     TAGS='video,atlanta' \
     SHOPIFY_TOKEN='<redacted>' \
