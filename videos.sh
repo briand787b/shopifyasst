@@ -23,7 +23,7 @@
 set -e
 source .env
 
-readonly DOWNLOAD_DIR='./videos'
+readonly DOWNLOAD_DIR="$(pwd)/videos"
 readonly MAX_PREVIEW_SIZE=5000000
 readonly WATERMARKER='watermarker.png'
 readonly WATERMARKER_PATH="$DOWNLOAD_DIR/$WATERMARKER"
@@ -55,7 +55,7 @@ while IFS= read -r UF; do
     echo downloading "$UF"...
     aws s3 cp $S3_VIDEO_BUCKET/$"$UF" "$DOWNLOAD_PATH"
 
-    ffmpeg -i "$UF" -i "$WATERMARKER_PATH" \
+    ffmpeg -i "$DOWNLOAD_PATH" -i "$WATERMARKER_PATH" \
         -filter_complex \
         "[1]lut=a=val*0.3[a];[0][a]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2" \
         -codec:a copy "$SHOPIFY_UPLOAD_PATH"
@@ -67,16 +67,18 @@ while IFS= read -r UF; do
         echo 'Warning: no tags found in video EXIF data'
     fi
     
+    cd node
     SHOPIFY_PRODUCT_ID_OUT_PATH=output.txt \
         TAGS='video,atlanta' \
         SHOPIFY_TOKEN="$SHOPIFY_TOKEN" \
         FILENAME="$SHOPIFY_UPLOAD_PATH" \
         node src/index.js
+    cd ..
     
     echo "uploading asset ($DOWNLOAD_PATH) to shopify and linking to product ($PRODUCT_ID)..."
     ./upload_dda \
         -filename="$DOWNLOAD_PATH" \
-        -product="$PRODUCT_ID" \
+        -product="$(cat node/output.txt)" \
         -token="$DDA_TOKEN"
     
     rm "$DOWNLOAD_PATH" "$SHOPIFY_UPLOAD_PATH"
