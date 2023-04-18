@@ -99,11 +99,6 @@ async function uploadVideoToShopify(filename) {
     );
     console.log('about to finish form')
 
-    // contents = fs.readFileSync(filename)
-    // contents = fs.openSync(filename, 'r')
-    // console.log(`content size: ${contents.length}`);
-    // const blob = new Blob([contents], {type: "video/mp4"});
-
     // FILE NEEDS TO BE THE LAST THING APPENEDED
     console.log('about to add big file')
     formData.append("file", fs.createReadStream(filename));

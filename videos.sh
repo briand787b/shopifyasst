@@ -67,12 +67,11 @@ while IFS= read -r UF; do
         echo 'Warning: no tags found in video EXIF data'
     fi
     
-    echo "creating shopify product from image $SHOPIFY_UPLOAD_PATH"
-    PRODUCT_ID=$(python3 py/upload_shopify.py \
-        $TAGS \
-        --filename="$SHOPIFY_UPLOAD_PATH" \
-        --token="$SHOPIFY_TOKEN" \
-        --url="$SHOPIFY_URL")
+    SHOPIFY_PRODUCT_ID_OUT_PATH=output.txt \
+        TAGS='video,atlanta' \
+        SHOPIFY_TOKEN="$SHOPIFY_TOKEN" \
+        FILENAME="$SHOPIFY_UPLOAD_PATH" \
+        node src/index.js
     
     echo "uploading asset ($DOWNLOAD_PATH) to shopify and linking to product ($PRODUCT_ID)..."
     ./upload_dda \
