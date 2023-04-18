@@ -78,7 +78,9 @@ async function uploadVideoToShopify(filename) {
     // Upload video to staged url
     const formData = new FormData();
 
-    console.log('writing form');
+    console.log('staged target:  ')
+    console.log(stagedTarget)
+    console.log('writing form...');
     formData.append(
         "signature",
         stagedTarget.parameters.find((p) => p.name === "signature").value
@@ -95,9 +97,16 @@ async function uploadVideoToShopify(filename) {
         "key",
         stagedTarget.parameters.find((p) => p.name === "key").value
     );
+    console.log('about to finish form')
+
+    // contents = fs.readFileSync(filename)
+    // contents = fs.openSync(filename, 'r')
+    // console.log(`content size: ${contents.length}`);
+    // const blob = new Blob([contents], {type: "video/mp4"});
 
     // FILE NEEDS TO BE THE LAST THING APPENEDED
-    formData.append("file", fs.readFileSync(filename));
+    console.log('about to add big file')
+    formData.append("file", fs.createReadStream(filename));
 
     try {
         await axios.post(
