@@ -13,11 +13,12 @@ import (
 
 const (
 	mimeTypeJPEG = "image/jpeg"
+	mimeTypeMP4  = "video/mp4"
 )
 
-// Image represents any digital image, though it is currently only
+// Asset represents any digital image, though it is currently only
 // able to handle JPEGs
-type Image struct {
+type Asset struct {
 	ID       string
 	Filename string
 	Size     int64
@@ -29,16 +30,19 @@ type Image struct {
 	partitionsMx *sync.RWMutex
 }
 
-// NewImage is the factory for creating an Image asset
-func NewImage(filename string) (*Image, error) {
+// NewAsset is the factory for creating an Asset asset
+func NewAsset(filename string) (*Asset, error) {
 	fi, err := os.Stat(filename)
 	if err != nil {
 		return nil, fmt.Errorf("could not stat file %s: %w", filename, err)
 	}
 
 	mime := mime.TypeByExtension(filepath.Ext(filename))
-	if mime != mimeTypeJPEG {
-		return nil, fmt.Errorf("mime type is not %s (is: '%s')", mimeTypeJPEG, mime)
+	switch mime {
+	case mimeTypeJPEG, mimeTypeMP4:
+		break
+	default:
+		return nil, fmt.Errorf("mime type %s is not uploadable", mime)
 	}
 
 	fd, err := os.Open(filename)
@@ -46,7 +50,7 @@ func NewImage(filename string) (*Image, error) {
 		return nil, fmt.Errorf("could not open file: %w", err)
 	}
 
-	return &Image{
+	return &Asset{
 		Filename: filename,
 		Size:     fi.Size(),
 		MimeType: mime,
@@ -57,13 +61,13 @@ func NewImage(filename string) (*Image, error) {
 	}, nil
 }
 
-func (i *Image) Close() {
+func (i *Asset) Close() {
 	if err := i.contents.Close(); err != nil {
 		log.Printf("could not close file %s: %s", i.Filename, err)
 	}
 }
 
-func (i *Image) PartitionIDs() []int {
+func (i *Asset) PartitionIDs() []int {
 	i.partitionsMx.RLock()
 	defer i.partitionsMx.RUnlock()
 
@@ -75,7 +79,7 @@ func (i *Image) PartitionIDs() []int {
 	return ids
 }
 
-func (i *Image) Partition(partID int) (UploadPartition, error) {
+func (i *Asset) Partition(partID int) (UploadPartition, error) {
 	i.partitionsMx.RLock()
 	defer i.partitionsMx.RUnlock()
 
@@ -89,7 +93,7 @@ func (i *Image) Partition(partID int) (UploadPartition, error) {
 	return UploadPartition{}, fmt.Errorf("no partition found wtih id %d", partID)
 }
 
-func (i *Image) SetPartition(p UploadPartition) error {
+func (i *Asset) SetPartition(p UploadPartition) error {
 	if p.ID < 1 {
 		return errors.New("cannot set partition with non-positive ID")
 	}

@@ -1,5 +1,6 @@
 # specific to this project
 images/
+videos/
 .vscode
 deprecated_go
 upload_dda

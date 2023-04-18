@@ -14,11 +14,11 @@ const (
 	searchProductRetryCount = 60
 )
 
-// UploadImage is the entrypoint for asset upload.  It creates/uploads
+// UploadAsset is the entrypoint for asset upload.  It creates/uploads
 // the asset, then associates that asset with a Shopify product.
 // It returns the asset
-func UploadImage(filename string, u Uploader) (*Image, error) {
-	img, err := NewImage(filename)
+func UploadAsset(filename string, u Uploader) (*Asset, error) {
+	img, err := NewAsset(filename)
 	if err != nil {
 		return nil, fmt.Errorf("could not create image: %w", err)
 	}
@@ -43,13 +43,13 @@ func UploadImage(filename string, u Uploader) (*Image, error) {
 	return img, nil
 }
 
-// AssociateImageWithShopifyProduct links a Shopify product with a DDA asset (image).
+// AssociateAssetWithShopifyProduct links a Shopify product with a DDA asset (image).
 // The DDA API requires the DDA id of the Shopify product, which is held in DDA's database.
 // This requires the function to search DDA product API with the Shopify product ID.  The
 // returned product, if found, will contain the DDA product ID to use in the association
 // method that ultimately links the product and the asset.  Retries are required because
 // DDA can be slow to update their product API
-func AssociateImageWithShopifyProduct(ddaAssetID, shopifyProductIDStr string, a Associater) error {
+func AssociateAssetWithShopifyProduct(ddaAssetID, shopifyProductIDStr string, a Associater) error {
 	shopifyProductID, err := strconv.Atoi(shopifyProductIDStr)
 	if err != nil {
 		return fmt.Errorf("cannot convert %s to integer: %w", shopifyProductIDStr, err)
