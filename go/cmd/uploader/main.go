@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/briand787b/shopifyasst/internal/asset"
 	"github.com/briand787b/shopifyasst/internal/dda"
@@ -13,6 +14,8 @@ const (
 	filenameFlag  = "filename"
 	productIDFlag = "product"
 	authTokenFlag = "token"
+
+	shopifyIDPrefix = "gid://shopify/Product/"
 )
 
 var (
@@ -31,6 +34,9 @@ func main() {
 	if *productID == "" {
 		fmt.Printf("%s flag is mandatory\n", productIDFlag)
 		os.Exit(20)
+	} else if strings.HasPrefix(*productID, shopifyIDPrefix) {
+		// protect against common invalid args
+		*productID = strings.TrimPrefix(*productID, shopifyIDPrefix)
 	}
 
 	if *authToken == "" {
