@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 const FormData = require("form-data");
 const axios = require("axios");
 
@@ -137,7 +138,7 @@ async function createShopifyProduct(shopifyVideoSourceUrl) {
     `,
         variables: {
             input: {
-                title: filename,
+                title: path.basename(filename, ".mp4"),
                 productType: "Video",
                 status: "ACTIVE",
                 vendor: "City Stock",
