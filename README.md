@@ -37,18 +37,23 @@ sudo apt update
 sudo apt upgrade -y
 sudo reboot
 # log back in as before
-sudo apt install exiftool awscli golang python3.10-venv python3-pip imagemagick
+sudo apt install exiftool awscli golang python3.10-venv python3-pip imagemagick ffmpeg
 aws configure # provide access key and pw from console
 # clone repo
-git clone git@github.com:briand787b/shopifyasst.git
+git clone https://github.com/briand787b/shopifyasst.git
 cd shopifyasst
 # set up secret env vars
 cp example.env .env # fill in secret values
 # install py deps.  You may want to create a venv before this
 cd py
-python -m venv venv # optional
-source py/venv/bin/activate
-pip install -r py/requirements.txt
+python3 -m venv venv
+source venv/bin/activate
+pip3 install -r requirements.txt
+# install node dependencies
+curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+nvm install 18
+cd node
+npm install
 ```
 
 ## How to Run
