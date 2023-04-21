@@ -24,8 +24,8 @@ set -e
 source .env
 
 readonly DOWNLOAD_DIR="$(pwd)/videos"
-readonly MAX_PREVIEW_SIZE=5000000
 readonly WATERMARKER='watermarker.png'
+readonly SHOPIFY_ID_PATH='shopify_product_id.txt'
 readonly WATERMARKER_PATH="$DOWNLOAD_DIR/$WATERMARKER"
 
 if [[ "$1" == '--recompile' ]]; then
@@ -62,14 +62,15 @@ while IFS= read -r UF; do
 
     echo extracting tags...
     TAGS=$(exiftool '-Subject' -s -s -s "$DOWNLOAD_PATH")
+    : "${TAGS:=video}"
 
     if [ -z "$TAGS" ]; then
         echo 'Warning: no tags found in video EXIF data'
     fi
     
     cd node
-    SHOPIFY_PRODUCT_ID_OUT_PATH=output.txt \
-        TAGS='video,atlanta' \
+    SHOPIFY_PRODUCT_ID_OUT_PATH="$SHOPIFY_ID_PATH" \
+        TAGS="$TAGS" \
         SHOPIFY_TOKEN="$SHOPIFY_TOKEN" \
         FILENAME="$SHOPIFY_UPLOAD_PATH" \
         node src/index.js
@@ -78,9 +79,9 @@ while IFS= read -r UF; do
     echo "uploading asset ($DOWNLOAD_PATH) to shopify and linking to product ($PRODUCT_ID)..."
     ./upload_dda \
         -filename="$DOWNLOAD_PATH" \
-        -product="$(cat node/output.txt)" \
+        -product="$(cat node/$SHOPIFY_ID_PATH)" \
         -token="$DDA_TOKEN"
     
-    rm "$DOWNLOAD_PATH" "$SHOPIFY_UPLOAD_PATH"
+    rm "$DOWNLOAD_PATH" "$SHOPIFY_UPLOAD_PATH" $SHOPIFY_ID_PATH
     aws s3 rm "$S3_VIDEO_BUCKET/$UF"
 done <<< "$UPLOAD_FILES"

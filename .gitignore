@@ -1,4 +1,5 @@
 # specific to this project
+node/output.txt
 images/
 videos/
 .vscode
