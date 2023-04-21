@@ -82,6 +82,6 @@ while IFS= read -r UF; do
         -product="$(cat node/$SHOPIFY_ID_PATH)" \
         -token="$DDA_TOKEN"
     
-    rm "$DOWNLOAD_PATH" "$SHOPIFY_UPLOAD_PATH" $SHOPIFY_ID_PATH
+    rm "$DOWNLOAD_PATH" "$SHOPIFY_UPLOAD_PATH" "node/$SHOPIFY_ID_PATH"
     aws s3 rm "$S3_VIDEO_BUCKET/$UF"
 done <<< "$UPLOAD_FILES"
