@@ -53,7 +53,7 @@ while IFS= read -r UF; do
     SHOPIFY_UPLOAD_PATH="${DOWNLOAD_DIR}/$FILENAME"
 
     echo downloading "$UF"...
-    aws s3 cp $S3_VIDEO_BUCKET/$"$UF" "$DOWNLOAD_PATH"
+    aws s3 cp "${S3_VIDEO_BUCKET}/${UF}" "$DOWNLOAD_PATH"
 
     ffmpeg -i "$DOWNLOAD_PATH" -i "$WATERMARKER_PATH" \
         -filter_complex \
