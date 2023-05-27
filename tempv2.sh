@@ -25,7 +25,7 @@ function upload()
     ffmpeg -i "$DOWNLOAD_PATH" -i "$WATERMARKER_PATH" \
         -v error -nostats -hide_banner -filter_complex \
         "[1]lut=a=val*0.3[a];[0][a]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2" \
-        -codec:a copy "$SHOPIFY_UPLOAD_PATH"
+        -codec:a copy "$SHOPIFY_UPLOAD_PATH" &> ffmpeg.log
     # cp "$DOWNLOAD_PATH" "$SHOPIFY_UPLOAD_PATH"
 
     echo extracting tags...
