@@ -14,7 +14,7 @@ fi
 
 
 # UF is an abbreviation for upload_file
-UF="$0"
+UF="$1"
 FILENAME=$(basename "$UF")
 DOWNLOAD_PATH="${DOWNLOAD_DIR}/original_$FILENAME"
 SHOPIFY_UPLOAD_PATH="${DOWNLOAD_DIR}/$FILENAME"
