@@ -13,13 +13,8 @@ readonly WATERMARKER='watermarker.png'
 readonly SHOPIFY_ID_PATH='shopify_product_id.txt'
 readonly WATERMARKER_PATH="$DOWNLOAD_DIR/$WATERMARKER"
 
-aws s3 cp "$S3_VIDEO_BUCKET/$WATERMARKER" "$WATERMARKER_PATH"
-
-aws s3 ls $S3_VIDEO_BUCKET --recursive \
-    | awk '{$1=$2=$3=""; print substr($0, 4)}' \
-    | grep '\.mp4$\|\.mov$' \
-    | \
-while read UF; do
+function upload()
+{
     FILENAME=$(basename "$UF")
     DOWNLOAD_PATH="${DOWNLOAD_DIR}/original_$FILENAME"
     SHOPIFY_UPLOAD_PATH="${DOWNLOAD_DIR}/$FILENAME"
@@ -28,7 +23,7 @@ while read UF; do
     aws s3 cp "${S3_VIDEO_BUCKET}/${UF}" "$DOWNLOAD_PATH"
 
     ffmpeg -i "$DOWNLOAD_PATH" -i "$WATERMARKER_PATH" \
-        -v fatal -filter_complex \
+        -v error -no-stats -filter_complex \
         "[1]lut=a=val*0.3[a];[0][a]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2" \
         -codec:a copy "$SHOPIFY_UPLOAD_PATH"
     # cp "$DOWNLOAD_PATH" "$SHOPIFY_UPLOAD_PATH"
@@ -57,4 +52,14 @@ while read UF; do
     
     rm "$DOWNLOAD_PATH" "$SHOPIFY_UPLOAD_PATH" "node/$SHOPIFY_ID_PATH"
     aws s3 rm "$S3_VIDEO_BUCKET/$UF"
+}
+
+aws s3 cp "$S3_VIDEO_BUCKET/$WATERMARKER" "$WATERMARKER_PATH"
+
+aws s3 ls $S3_VIDEO_BUCKET --recursive \
+    | awk '{$1=$2=$3=""; print substr($0, 4)}' \
+    | grep '\.mp4$\|\.mov$' \
+    | \
+while read UF; do
+    upload
 done
