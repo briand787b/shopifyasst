@@ -23,7 +23,7 @@ function upload()
     aws s3 cp "${S3_VIDEO_BUCKET}/${UF}" "$DOWNLOAD_PATH"
 
     ffmpeg -i "$DOWNLOAD_PATH" -i "$WATERMARKER_PATH" \
-        -v error -no-stats -filter_complex \
+        -v error -nostats -hide_banner -filter_complex \
         "[1]lut=a=val*0.3[a];[0][a]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2" \
         -codec:a copy "$SHOPIFY_UPLOAD_PATH"
     # cp "$DOWNLOAD_PATH" "$SHOPIFY_UPLOAD_PATH"
