@@ -3,6 +3,11 @@
 set -e
 source .env
 
+# THIS IS NOT THE SAME AS THE MAIN SCRIPT
+# FOR TEST PURPOSES ONLY
+readonly S3_VIDEO_BUCKET="s3://citystock-uploader-test"
+# ---------------------------------------
+
 readonly DOWNLOAD_DIR="$(pwd)/videos"
 readonly WATERMARKER='watermarker.png'
 readonly SHOPIFY_ID_PATH='shopify_product_id.txt'
