@@ -2,17 +2,18 @@
 
 # *****************************************************************************
 # NOTES:
-# This script performs the work of creating shopify image products for
+# This script performs the work of creating shopify video products for
 # CityStock.  Shopify product creation, along with all dependent steps,
 # should be performed upon a simple invocation of this script (no args).
-# This script will first list all images in the target S3 bucket.  For 
-# every image in that bucket, this script will:
+# This script will first list all videos in the target S3 bucket.  For 
+# every video in that bucket, this script will:
 #   1. download the file
-#   2. extract the EXIF data
-#   3. create a Shopify product using the EXIF data
-#   4. upload the image asset to Downloadable Digital Assets for storage
-#   5. associate the asset with the Shopify product
-#   6. delete the asset from local filesystem and from S3 bucket
+#   2. watermark video
+#   3. extract the EXIF data
+#   4. create a Shopify product using the EXIF data
+#   5. upload the video asset to Downloadable Digital Assets for storage
+#   6. associate the asset with the Shopify product
+#   7. delete the asset from local filesystem and from S3 bucket
 #
 # Iterative Development Notes:
 # This script runs a go binary in the asset upload step for fast execution.  
