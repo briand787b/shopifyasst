@@ -35,7 +35,7 @@ fi
 
 UPLOAD_FILES=("$(aws s3 ls $S3_IMAGE_BUCKET --recursive \
     | awk '{$1=$2=$3=""; print substr($0, 4)}' \
-    | grep '.jpg$')")
+    | grep '\.jpg$')")
 if [ -z "$UPLOAD_FILES" ]; then
     echo 'no files found in s3 bucket, nothing to do...'
     exit 0

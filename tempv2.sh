@@ -31,6 +31,7 @@ while read UF; do
     #     -filter_complex \
     #     "[1]lut=a=val*0.3[a];[0][a]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2" \
     #     -codec:a copy "$SHOPIFY_UPLOAD_PATH"
+    cp "$DOWNLOAD_PATH" "$SHOPIFY_UPLOAD_PATH"
 
     echo extracting tags...
     TAGS=$(exiftool '-Subject' -s -s -s "$DOWNLOAD_PATH")

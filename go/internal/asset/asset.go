@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	mimeTypeJPEG = "image/jpeg"
-	mimeTypeMP4  = "video/mp4"
+	mimeTypeJPEG      = "image/jpeg"
+	mimeTypeMP4       = "video/mp4"
+	mimeTypeQuickTime = "video/quicktime" // .mov videos
 )
 
 // Asset represents any digital image, though it is currently only
@@ -39,7 +40,7 @@ func NewAsset(filename string) (*Asset, error) {
 
 	mime := mime.TypeByExtension(filepath.Ext(filename))
 	switch mime {
-	case mimeTypeJPEG, mimeTypeMP4:
+	case mimeTypeJPEG, mimeTypeMP4, mimeTypeQuickTime:
 		break
 	default:
 		return nil, fmt.Errorf("mime type %s is not uploadable", mime)

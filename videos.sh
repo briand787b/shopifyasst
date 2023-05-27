@@ -40,7 +40,7 @@ aws s3 cp "$S3_VIDEO_BUCKET/$WATERMARKER" "$WATERMARKER_PATH"
 
 UPLOAD_FILES=("$(aws s3 ls $S3_VIDEO_BUCKET --recursive \
     | awk '{$1=$2=$3=""; print substr($0, 4)}' \
-    | grep '.mp4$')")
+    | grep '\.mp4$\|\.mov$')")
 if [ -z "$UPLOAD_FILES" ]; then
     echo 'no files found in s3 bucket, nothing to do...'
     exit 0
